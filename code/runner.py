@@ -1,6 +1,7 @@
 import os
 import sys
 from settings import settings
+from main_functions import userget
 c =  settings['colors']['primary']
 
 class runner:
@@ -14,7 +15,7 @@ class runner:
         print(c + os.getcwd())
     
     def me(self):
-        print(c + os.getlogin())
+        print(c + userget())
     
     def swap(self, fol: str):
         os.chdir(fol)
@@ -30,7 +31,12 @@ class runner:
             pass
 
         def list(self):
-            print(c + os.listdir())
+            files = os.listdir()
+            for i in range(0, len(files), 4):
+                print(c + ' '.join(files[i:i+4]))
+        
+        def cs(self):
+            os.system('cls' if os.name == 'nt' else 'clear')
         
         def crfol(self, folName: str):
             os.mkdir(folName)

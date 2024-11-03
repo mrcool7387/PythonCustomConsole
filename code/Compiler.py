@@ -43,12 +43,15 @@ class compiler:
 
                 match cmdwa[0]:
                     case 'help':
-                        for attr in dir(runner.filemode):
-                            if not attr.startswith('__') and not attr.startswith('_'):
-                                print(f"\033[94m{attr}\033[0m")
+                        cp = settings['colors']['primary']
+                        for cmd in settings['cmdHelp']['filemode']:
+                            print(f'{settings["colors"]["primary"]}{str(cmd):40}| {settings["cmdHelp"]["filemode"][cmd]}\033[0m')
                     
                     case 'list':
                         runner.filemode().list()
+                    
+                    case 'cs':
+                        runner.filemode().cs()
                     
                     case 'crfol':
                         runner.filemode().crfol(cmdwa[1])
@@ -75,7 +78,7 @@ class compiler:
                 sl.info('File mode was closed due to a keyboard interruption')
                 break
             except Exception as e:
-                logging.error(f'An error occurred while in file mode: {e} ({e.__traceback__}')
+                logging.error(f'An error occurred while in file mode: {e} ({e.__traceback__})')
                 sl.error(f'An error occurred while in file mode: {e}')
 
 
@@ -123,9 +126,9 @@ class compiler:
                     sl.critical('contact the Developer.', 200)
             
             case 'help':
-                for attr in dir(runner):
-                    if not attr.startswith('__') and not attr.startswith('_'):
-                        print(f"\033[94m{attr}\033[0m")
+                cp = settings['colors']['primary']
+                for cmd in settings['cmdHelp']['normal']:
+                    print(f'{settings["colors"]["primary"]}{str(cmd):12}| {settings["cmdHelp"]["normal"][cmd]}\033[0m')
             
             #None of These
             case _:

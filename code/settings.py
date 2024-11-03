@@ -1,17 +1,22 @@
 from datetime import datetime
+from main_functions import userget, userinit
 import os
 
+from platformdirs import user_config_path, user_data_dir
+
 width, height = os.get_terminal_size()
-wd, user = os.getcwd(), os.getlogin()
+wd = os.getcwd()
 
 settings: dict = {
     "terminal": {
         "name": "TCS-Terminal",
+        "login": True,
         "height": int(height),
         "width": int(width),
+        "me": f"{userinit()}{userget()}",
         "inputCmdStyle": {
-            "normal": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {user} \033[94m$ \033[0m",
-            "filemode": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {user} \033[94mFileMode $ \033[0m"
+            "normal": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94m$ \033[0m",
+            "filemode": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94mFileMode $ \033[0m"
         }
     },
     "colors": {
@@ -48,6 +53,11 @@ settings: dict = {
         "debug": "\u2699"
     },
     "logging": {
+        "file_login": {
+            "logLevel":  "INFO",
+            "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
+            "logFile": f"logs/tcs-login-{datetime.now().strftime('%d-%m-%Y....%H.%M.%S')}.log"
+        },
         "file_systemlogger": {
             "logLevel":  "DEBUG",
             "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
@@ -62,6 +72,28 @@ settings: dict = {
             "logLevel":  "DEBUG",
             "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
             "logFile": f"logs/tcs-compiler-{datetime.now().strftime('%d-%m-%Y....%H.%M.%S')}.log"
+        }
+    },
+    "cmdHelp": {
+        "normal": {
+            "help": "Displays This List",
+            "exit": "Exits The Program",
+            "cs": "Clears The Screen",
+            "wd": "Displays the current WorkDictonary",
+            "swap [path]":  "Changes the WorkDictonary",
+            "me": "Displays the current User",
+            "echo [msg]":  "Echoes the input"
+        },
+        "filemode": {
+            "help": "Displays This List",
+            "exit": "Exits The Program",
+            "cs": "Clears The Screen",
+            "list": "Lists the files in the current directory",
+            "crfol [folName]": "Creates a new folder",
+            "delfol [folName]": "Deletes a folder",
+            "delete [fileName]": "Delets a file",
+            "write [fileName] [content] [True:False]": "Writes to a file",
+            "read [fileName]": "Reads from a file"
         }
     }
 }
