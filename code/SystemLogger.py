@@ -14,6 +14,7 @@ class SystemLogger:
         self.errorCol = settings['colors']['error']
         self.successCol = settings['colors']['success']
         self.debugCol = settings['colors']['debug']
+        self.questionCol = settings['colors']['question']
 
         # Symbols
         self.infoSym = settings['symbols']['info']
@@ -21,6 +22,7 @@ class SystemLogger:
         self.errorSym = settings['symbols']['cross']
         self.successSym = settings['symbols']['check']
         self.debugSym = settings['symbols']['debug']
+        self.questionSym = settings['symbols']['question']
 
         #Formats
         self.bold = settings['formats']['bold']
@@ -34,6 +36,15 @@ class SystemLogger:
     def info(self, message: str) -> None:
         print(f' {self.infoCol}{self.infoSym}  {message}{self.reset}')
     
+    def confirm(self, message: str) -> bool:
+        ans = input(f' {self.questionCol}{self.questionSym}  {message}{self.reset}')
+        if ans.lower() in ['y', 'yes', 'j', 'ja']:
+            return True
+        elif ans.lower() in ['n', 'no', 'nein']:
+            return False
+        else:
+            self.warning(f'"{ans}" is not a Answer for a yes/no question!')
+            return self.confirm(message)
     def success(self, message: str) -> None:
         print(f' {self.successCol}{self.successSym}  {message}{self.reset}')
     

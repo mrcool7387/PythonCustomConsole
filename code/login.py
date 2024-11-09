@@ -1,14 +1,40 @@
-import tkinter as tk
+import sqlite3
 import logging
+import tkinter as tk
 from SystemLogger import SystemLogger
-from settings import settings
 
 sl = SystemLogger()
 
-logName = settings['logging']['file_login']['logFile']
-logLevel = settings['logging']['file_login']['logLevel']
-logFormat = settings['logging']['file_login']['logFormat']
-logging.basicConfig(filename=logName, level=logLevel, format=logFormat)
+def create_db():
+    """Erstellt die SQLite-Datenbank und die Benutzer-Tabelle."""
+    conn = sqlite3.connect('databases/users.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL,
+            permission TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def add_user(username: str, password: str, permission: str):
+    """Fügt einen Benutzer zur Datenbank hinzu."""
+    try:
+        conn = sqlite3.connect('databases/users.db')
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            INSERT INTO users (username, password, permission)
+            VALUES (?, ?, ?)
+        ''', (username, password, permission))
+
+        conn.commit()
+        conn.close()
+        logging.info(f'Added new user: {username}')
+    except sqlite3.Error as e:
+        logging.error(f"Database error: {e}")
 
 class LoginModule:
     def __init__(self):
@@ -32,47 +58,47 @@ class LoginModule:
 
         self.login_button = tk.Button(self.root, text="Login", font=("Arial", 12), command=self.check_credentials)
         self.login_button.pack(pady=10)
-        logging.info('Finished Creatning Login Window')
+        logging.info('Finished Creating Login Window')
         
         self.login: bool = False
         self.perms: str = 'user'
         logging.info(f'Set variables \'{self.login = }\' and \'{self.perms = }\'')
 
     def check_credentials(self):
-        username = self.username_entry.get().lower().strip()  # Bereinigung von Leerzeichen
+        username = self.username_entry.get().lower().strip()
         password = self.password_entry.get().strip()
-        logging.info(f'User inputed \'{username = }\' and \'password (secret)\'')
+        logging.info(f'User inputted \'{username = }\' and \'password (secret)\'')
         
         try:
-            with open('terminal.secret', 'r') as file:
-                for line in file.readlines():
-                    stored_username, stored_password, stored_permission = line.strip().split(',')
-                    if username == stored_username.lower() and password == stored_password:
-                        self.root.destroy()
-                        from main_functions import userset
-                        userset(username)
-                        self.login = True  # Korrektur hier
-                        self.perms = stored_permission
-                        logging.info(f'User \'{username = }\' logged in with permission \'{self.perms}\'')
-                        sl.success('Successfully logged in!')
-                        return
-            
-            # Falls keine Übereinstimmung gefunden wurde, ungültiger Login
-            logging.warning(f"Invalid login attempt with {username} and {password}")
-            sl.error("Invalid username or password")
-            self.root.destroy()  # Fenster schließen bei ungültigen Daten
+            conn = sqlite3.connect('databases/users.db')
+            cursor = conn.cursor()
 
-        except FileNotFoundError:
-            print("Datei nicht gefunden")
-            logging.error('Datei nicht gefunden')
-            sl.error("Datei nicht gefunden")
+            cursor.execute('SELECT password, permission FROM users WHERE username = ?', (username,))
+            user_data = cursor.fetchone()
+
+            if user_data and user_data[0] == password:
+                self.root.destroy()
+                from main_functions import userset
+                userset(username)
+                self.login = True
+                self.perms = user_data[1]
+                logging.info(f'User \'{username = }\' logged in with permission \'{self.perms}\'')
+                sl.success('Successfully logged in!')
+            else:
+                logging.warning(f"Invalid login attempt with {username} and password")
+                sl.error("Invalid username or password")
+                self.root.destroy()
+
+            conn.close()
+
+        except sqlite3.Error as e:
+            logging.error(f"Database error: {e}")
+            sl.error("Database error occurred")
             self.root.destroy()
         except Exception as e:
-            print(f"Ein Fehler ist aufgetreten: {e}")
-            logging.error(f'Ein Fehler ist aufgetreten: {e}')
-            sl.error(f'Ein Fehler ist aufgetreten: {e}')
+            logging.error(f'An error occurred: {e}')
+            sl.error(f'An error occurred: {e}')
             self.root.destroy()
-
 
     def run(self):
         logging.info('Calling Login Window')

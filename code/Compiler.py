@@ -1,10 +1,12 @@
 import logging
+import os
+import sys
 from SystemLogger import SystemLogger
 from settings import settings
-from runner import runner
-from main_functions import get_input
+from VarManager import VarManager
+from main_functions import get_input, userget
 
-runner = runner()
+c =  settings['colors']['primary']
 sl = SystemLogger()
 fileCmdCaptureErrorKill: bool = False
 
@@ -38,6 +40,14 @@ class compiler:
                 cmd = get_input(settings['terminal']['inputCmdStyle']['filemode'])
                 if cmd == 'exit':
                     break
+                
+                words = cmd.split()
+                for id, word in enumerate(words):
+                    if word.startswith('$') and word.endswith('$'):
+                        value = VarManager().get(word.replace('$', ''))
+                        if value:
+                            words[id] = value
+                cmd = ' '.join(words)
 
                 cmdwa = self.compile(cmd, False)
 
@@ -48,25 +58,38 @@ class compiler:
                             print(f'{settings["colors"]["primary"]}{str(cmd):40}| {settings["cmdHelp"]["filemode"][cmd]}\033[0m')
                     
                     case 'list':
-                        runner.filemode().list()
+                        files = os.listdir()
+                        for i in range(0, len(files), 4):
+                            print(c + ' '.join(files[i:i+4]))
                     
                     case 'cs':
-                        runner.filemode().cs()
+                        os.system('cls' if os.name == 'nt' else 'clear')
                     
                     case 'crfol':
-                        runner.filemode().crfol(cmdwa[1])
+                        os.mkdir(' '.join(cmdwa[1:]))
                     
                     case 'delfol':
-                        runner.filemode().delfol(cmdwa[1])
+                        os.rmdir(' '.join(cmdwa[1:]))
                     
                     case 'delete':
-                        runner.filemode().delete(cmdwa[1])
+                        os.remove(' '.join(cmdwa[1:]))
                     
                     case 'read':
-                        runner.filemode().read(cmdwa[1])
+                        with open(cmdwa[1], 'r') as file:
+                            content = file.read()
+                            file.close()
+                            print(c + content)
                     
                     case 'write':
-                        runner.filemode().write(cmdwa[1],  cmdwa[2],  cmdwa[3]) #runner.filemode().write(FileName, Content, Append)
+                        fileName = cmdwa[1]
+                        txt = ' '.join(cmdwa[3:])
+                        if cmdwa[2]:
+                            with open(fileName, 'a') as file:
+                                file.write(txt)
+                        else:
+                            with open(fileName, 'w') as file:
+                                file.write(txt)
+                        file.close()
                     
                     case _:
                         logging.info(f"Unknown command: {cmd}")
@@ -80,6 +103,56 @@ class compiler:
             except Exception as e:
                 logging.error(f'An error occurred while in file mode: {e} ({e.__traceback__})')
                 sl.error(f'An error occurred while in file mode: {e}')
+    
+    def var_mode(self):
+        while True:
+            try:
+                cmd = get_input(settings['terminal']['inputCmdStyle']['varmode'])
+                if cmd == 'exit':
+                    break
+                
+                words = cmd.split()
+                for id, word in enumerate(words):
+                    if word.startswith('$') and word.endswith('$'):
+                        value = VarManager().get(word.replace('$', ''))
+                        if value:
+                            words[id] = value
+                cmd = ' '.join(words)
+                
+                cmdwa = self.compile(cmd, False)
+
+                match cmdwa[0]:
+                    case 'help':
+                        cp = settings['colors']['primary']
+                        for cmd in settings['cmdHelp']['varmode']:
+                            print(f'{settings["colors"]["primary"]}{str(cmd):20}| {settings["cmdHelp"]["varmode"][cmd]}\033[0m')
+                    case 'create':
+                        VarManager().create(cmdwa[1])
+                    
+                    case 'set':
+                        VarManager().set(cmdwa[1], cmdwa[2])
+                    
+                    case 'delete':
+                        VarManager().delete(cmdwa[1])
+                    
+                    case 'list':
+                        VarManager().list()
+                    
+                    case 'cs':
+                        os.system('cls' if os.name == 'nt' else 'clear')
+                    
+                    case _:
+                        logging.info(f"Unknown command: {cmd}")
+                        sl.warning(f"'{cmd}' is not a valid Command")
+                        sl.warning("Run 'help' to get a list of all valid Commands")
+
+            except KeyboardInterrupt:
+                logging.info('File mode was closed due to a keyboard interruption')
+                sl.info('File mode was closed due to a keyboard interruption')
+                break
+            except Exception as e:
+                logging.error(f'An error occurred while in variable mode: {e} ({e.__traceback__})')
+                sl.error(f'An error occurred while in variable mode: {e}')
 
 
     
@@ -89,22 +162,22 @@ class compiler:
 
         match cmd:
             case 'echo':
-                runner.echo(' '.join(attr))
+                print(c + ' '.join(attr))
             
             case 'exit':
-                runner.exit()
+                sys.exit()
             
             case 'swap':
-                runner.swap(attr[0])
+                os.chdir(attr[0:])
             
             case 'me':
-                runner.me()
+                print(c + userget())
             
             case 'wd':
-                runner.wd()
+                print(c + os.getcwd())
             
             case 'cs':
-                runner.cs()
+                os.system('cls' if os.name == 'nt' else 'clear')
             
             case 'file':
                 if not fileCmdCaptureErrorKill:

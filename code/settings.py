@@ -1,11 +1,10 @@
 from datetime import datetime
-from main_functions import userget, userinit
+from main_functions import userget, userinit, init
 import os
-
-from platformdirs import user_config_path, user_data_dir
 
 width, height = os.get_terminal_size()
 wd = os.getcwd()
+init()
 
 settings: dict = {
     "terminal": {
@@ -16,7 +15,8 @@ settings: dict = {
         "me": f"{userinit()}{userget()}",
         "inputCmdStyle": {
             "normal": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94m$ \033[0m",
-            "filemode": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94mFileMode $ \033[0m"
+            "filemode": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94mFileMode $ \033[0m",
+            "varmode": f"\033[92m\033[1m{wd} \033[0m\033[90m| {datetime.now().strftime('%d-%m-%Y %H.%M.%S')} | {userget()} \033[94mVariableMode $ \033[0m"
         }
     },
     "colors": {
@@ -27,6 +27,7 @@ settings: dict = {
         "warning": "\033[93m",
         "info": "\033[96m",
         "debug": "\033[95m",
+        "question": "\033[95m",
         "light": "\033[97m",
         "dark": "\033[90m"
     },
@@ -68,6 +69,11 @@ settings: dict = {
             "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
             "logFile": f"logs/tcs-main-{datetime.now().strftime('%d-%m-%Y....%H.%M.%S')}.log"
         },
+        "file_varmgr": {
+            "logLevel":  "INFO",
+            "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
+            "logFile": f"logs/tcs-varmgr-{datetime.now().strftime('%d-%m-%Y....%H.%M.%S')}.log"
+        },
         "file_compiler": {
             "logLevel":  "DEBUG",
             "logFormat": "%(asctime)s - %(levelname)s | %(message)s",
@@ -94,6 +100,15 @@ settings: dict = {
             "delete [fileName]": "Delets a file",
             "write [fileName] [content] [True:False]": "Writes to a file",
             "read [fileName]": "Reads from a file"
+        },
+        "varmode": {
+            "help": "Displays This List",
+            "exit": "Exits The Program",
+            "cs": "Clears The Screen",
+            "list": "Lists the variables in the current instance",
+            "new [name]": "Creates a new variable",
+            "set [name] [value]": "Sets the value of a variable",
+            "delete [name]": "Delete a Variable?"
         }
     }
 }
